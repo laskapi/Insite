@@ -36,20 +36,9 @@ import in2horizon.insite.ui.MyGeckoView
 fun MainScaffold(sessionsManager: SessionsManager) {
     val TAG = "MainScaffold"
     val viewModel: TransViewModel = hiltViewModel()
-    //   val url = viewModel.url.collectAsState()
     val activeSession = viewModel.activeSession.collectAsState()
     val translationToShow = viewModel.translationToShow.collectAsState()
 
-
-    /*
-  val showTranslation = viewModel.showTranslation.collectAsState()
-  val translation = viewModel.translation.collectAsState()
-  val sourceText = viewModel.sourceText.collectAsState()
-  val pagerState = rememberPagerState(0)
-  val coroutineScope = rememberCoroutineScope()
-*/
-
-    //   val clearSelection = viewModel.clear_Selection.collectAsState()
 
     Scaffold(topBar = {
         MyTopAppBar(sessionsManager.get(activeSession.value))
@@ -57,12 +46,10 @@ fun MainScaffold(sessionsManager: SessionsManager) {
     },
         content = {
 
-          //  Column {
 
                 AndroidView(
                     modifier = Modifier
                         .fillMaxWidth()
-                 //       .weight(1F, true)
                         .padding(it), // Occupy the max size in the
                     // Compose UI tree
                     factory = { context ->
@@ -77,7 +64,6 @@ fun MainScaffold(sessionsManager: SessionsManager) {
                         Log.d(TAG, "updated to " + viewModel.mUrl)
                     }
                 )
-       //     }
         },
         bottomBar = {
             val context = LocalContext.current

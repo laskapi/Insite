@@ -5,11 +5,13 @@ import android.util.Patterns
 import android.util.SizeF
 import android.webkit.URLUtil
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.core.content.res.TypedArrayUtils.getString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gmail.in2horizon.insite.db.Translation
 import com.gmail.in2horizon.insite.db.TranslationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,9 +45,16 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
 
     var selectionCoords: SizeF? = null
 
+    private val _showPreferences= MutableStateFlow(false)
+    var showPreferences=_showPreferences.asStateFlow()
+
     private var src = ""
+    private var _engineUrl=MutableStateFlow("")
+    var engineUrl=_engineUrl.asStateFlow()
 
 
+    @ApplicationContext
+    private lateinit var appContext:ApplicationContext
     init {
         viewModelScope.launch(Dispatchers.IO) {
             updateLastTranslations()
@@ -85,11 +94,11 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
                         urlString + " :: " + mUrl//_url.value
             )
         } else {
-            mUrl = "https://www.google.pl/search?q=" +
+            mUrl = engineUrl.value +address.value.text
 
 //            _url.value = "https://www.google.pl/search?q=" +
                     /*address.value.text*/
-                    urlString
+            //        urlString
             Log.d(
                 TAG, "invalid " +
                         /*_url.value*/
@@ -152,5 +161,11 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
         updateTranslationToShow()
     }
 
-
+    fun showPreferences(show:Boolean){
+        _showPreferences.value=show
+    }
+    fun setEngine(engine:String){
+        _engineUrl.value=engine
+        setUrl(address.value.text)
+    }
 }

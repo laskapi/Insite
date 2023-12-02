@@ -3,6 +3,7 @@ package in2horizon.insite.ui.theme
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
@@ -67,7 +68,11 @@ fun InsiteTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-
+  /*      shapes = Shapes(
+            extraSmall = RoundedCornerShape(20), small = RoundedCornerShape(20), medium =
+            RoundedCornerShape(20),
+            large = RoundedCornerShape(20), extraLarge = RoundedCornerShape(20)
+        ),*/
         content = content
     )
 }

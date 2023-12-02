@@ -13,19 +13,18 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import dagger.hilt.android.AndroidEntryPoint
 import in2horizon.insite.gecko.SessionObserver
 import in2horizon.insite.gecko.SessionsManager
+import in2horizon.insite.ui.MainComposable
 import in2horizon.insite.ui.theme.InsiteTheme
 import javax.inject.Inject
 
@@ -36,6 +35,7 @@ class MainActivity :
 
     private val TAG = javaClass.name
     val viewModel: TransViewModel by viewModels()
+
 
     @Inject
     lateinit var sessionsManager: SessionsManager
@@ -64,11 +64,15 @@ class MainActivity :
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainScaffold(sessionsManager)
+
+                  MainComposable(sessionsManager)
+                    //    MainScaffold(sessionsManager)
+
                 }
             }
         }
     }
+
 
 
     override fun update(action: SessionObserver.Action, data: Bundle) {

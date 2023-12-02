@@ -38,7 +38,7 @@ import org.mozilla.geckoview.GeckoSession
 
 @Composable
 fun MyTopAppBar(session: GeckoSession) {
-    val TAG="MyTopAppBar"
+    val TAG = "MyTopAppBar"
     val viewModel: TransViewModel = hiltViewModel()
     val address = viewModel.address.collectAsState()
     val focusManager = LocalFocusManager.current
@@ -50,16 +50,15 @@ fun MyTopAppBar(session: GeckoSession) {
 
 
     Row(
-        modifier=Modifier
+        modifier = Modifier
             .background(color = MaterialTheme.colorScheme.secondaryContainer)
             .fillMaxWidth(1f)
             .padding(4.dp)
-          .onSizeChanged {
+            .onSizeChanged {
 
-           Log.d(TAG,""+it.width.dp+" :: "+it.height.dp)
+                Log.d(TAG, "" + it.width.dp + " :: " + it.height.dp)
 
-        }
-        ,
+            },
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -127,8 +126,8 @@ fun MyTopAppBar(session: GeckoSession) {
 
         IconButton(
             onClick = {
-            session.goForward()
-       //         viewModel.goForward(true)
+                session.goForward()
+                //         viewModel.goForward(true)
             }, modifier = Modifier.wrapContentSize(
                 unbounded = true
             )
@@ -140,7 +139,7 @@ fun MyTopAppBar(session: GeckoSession) {
 
             IconButton(
                 onClick = {
-/*TODO*/
+                    viewModel.showPreferences(true)
                 }, modifier = Modifier.wrapContentSize(
                     unbounded = true
                 )
