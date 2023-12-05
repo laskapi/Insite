@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import in2horizon.insite.gecko.SessionsManager
 import in2horizon.insite.ui.DeleteButton
 import in2horizon.insite.ui.LastTranslationsView
 import in2horizon.insite.ui.MyGeckoView
@@ -33,15 +32,15 @@ import in2horizon.insite.ui.MyGeckoView
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun MainScaffold(sessionsManager: SessionsManager) {
+fun MainScaffold() {
     val TAG = "MainScaffold"
     val viewModel: TransViewModel = hiltViewModel()
-    val activeSession = viewModel.activeSession.collectAsState()
     val translationToShow = viewModel.translationToShow.collectAsState()
+    val url=viewModel.mUrl.collectAsState()
 
 
     Scaffold(topBar = {
-        MyTopAppBar(sessionsManager.get(activeSession.value))
+        MyTopAppBar(viewModel.getActiveSession())
 
     },
         content = {
@@ -55,13 +54,14 @@ fun MainScaffold(sessionsManager: SessionsManager) {
                     factory = { context ->
                         MyGeckoView(context, viewModel).apply {
 
-                            setSession(sessionsManager.get(activeSession.value))
-                            session?.loadUri(viewModel.mUrl)
+                            setSession(viewModel.getActiveSession())
+         //                   session?.loadUri(url.value)
 
                         }
                     },
                     update = { view ->
-                        Log.d(TAG, "updated to " + viewModel.mUrl)
+                        view.session?.loadUri(url.value)
+                        Log.d(TAG, "updated to " +url.value)
                     }
                 )
         },

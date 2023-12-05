@@ -44,6 +44,8 @@ fun MyTopAppBar(session: GeckoSession) {
     val focusManager = LocalFocusManager.current
     var selectionRange: TextRange? = null
 
+    val searchTextState=remember{ mutableStateOf("") }
+
     var searchFocused by remember {
         mutableStateOf(false)
     }
@@ -116,7 +118,7 @@ fun MyTopAppBar(session: GeckoSession) {
                 }, keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {
                 viewModel.setUrl(address.value.text)
-                session.loadUri(viewModel.mUrl)
+//                session.loadUri(viewModel.mUrl)
                 focusManager.clearFocus()
             }),
             singleLine = true,

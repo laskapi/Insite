@@ -5,17 +5,19 @@ import android.util.Patterns
 import android.util.SizeF
 import android.webkit.URLUtil
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.core.content.res.TypedArrayUtils.getString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gmail.in2horizon.insite.db.Translation
 import com.gmail.in2horizon.insite.db.TranslationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import in2horizon.insite.gecko.SessionObserver
+import in2horizon.insite.gecko.SessionsManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.mozilla.geckoview.GeckoSession
 import java.util.Collections
 import java.util.Timer
 import javax.inject.Inject
@@ -26,40 +28,51 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
     ViewModel() {
 
     private val TAG = javaClass.name
-    private var lastTranslations = Collections.EMPTY_LIST
-    private var lastTranslationsIterator = 0
-    private var lastTranslationsViewUpdateTimer: Timer = Timer()
+
+    @ApplicationContext
+    private lateinit var appContext: ApplicationContext
+
+    @Inject
+    lateinit var sessionsManager: SessionsManager
 
     private val LAST_TRANSLATIONS_COUNT = 5
     private val LAST_TRANSLATIONS_VIEW_UPDATE_PERIOD = 5000L
+
+    private var lastTranslations = Collections.EMPTY_LIST
+    private var lastTranslationsIterator = 0
+    private var lastTranslationsViewUpdateTimer= Timer()
+
 
     private val _translationToShow = MutableStateFlow(Translation())
     val translationToShow = _translationToShow.asStateFlow()
 
     private val _address = MutableStateFlow(TextFieldValue(""))
     val address = _address.asStateFlow()
-    var mUrl = "https://www.tagesschau.de/"
 
-    private val _activeSession = MutableStateFlow(Integer.valueOf(0))
-    val activeSession = _activeSession.asStateFlow()
+    private val _mUrl = MutableStateFlow("https://www.tagesschau.de/")
+    var mUrl = _mUrl.asStateFlow()
 
+    private var activeSession = 0
     var selectionCoords: SizeF? = null
 
-    private val _showPreferences= MutableStateFlow(false)
-    var showPreferences=_showPreferences.asStateFlow()
+    private val _showPreferences = MutableStateFlow(false)
+    var showPreferences = _showPreferences.asStateFlow()
 
-    private var src = ""
-    private var _engineUrl=MutableStateFlow("")
-    var engineUrl=_engineUrl.asStateFlow()
+    private var srcText = ""
+
+    private var _engineUrl = MutableStateFlow("")
+    var engineUrl = _engineUrl.asStateFlow()
 
 
-    @ApplicationContext
-    private lateinit var appContext:ApplicationContext
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             updateLastTranslations()
         }
-        lastTranslationsViewUpdateTimer.schedule(LAST_TRANSLATIONS_VIEW_UPDATE_PERIOD, LAST_TRANSLATIONS_VIEW_UPDATE_PERIOD) {
+        lastTranslationsViewUpdateTimer.schedule(
+            LAST_TRANSLATIONS_VIEW_UPDATE_PERIOD,
+            LAST_TRANSLATIONS_VIEW_UPDATE_PERIOD
+        ) {
             updateTranslationToShow()
         }
 
@@ -67,7 +80,7 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
 
 
     fun setActiveSession(index: Int) {
-        _activeSession.value = index
+       activeSession = index
     }
 
     fun setAddress(addr: TextFieldValue) {
@@ -77,31 +90,21 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
     fun setUrl(urlString: String) {
 
         if (Patterns.WEB_URL.matcher(
-                /*address.value.text*/
                 urlString
             ).matches()
         ) {
             val guessedUrl = URLUtil.guessUrl(
-                /*address.value.text*/
                 urlString
             )
-            mUrl = guessedUrl
-            //_url.value = guessedUrl
-            // _url.value=StringBuilder(guessedUrl).insert(4,"s").toString()
+            _mUrl.value = guessedUrl
             Log.d(
                 TAG, "valid " +
-                        /*address.value*/
-                        urlString + " :: " + mUrl//_url.value
+                        urlString + " :: " + mUrl.value//
             )
         } else {
-            mUrl = engineUrl.value +address.value.text
-
-//            _url.value = "https://www.google.pl/search?q=" +
-                    /*address.value.text*/
-            //        urlString
-            Log.d(
+            _mUrl.value = engineUrl.value + address.value.text
+         Log.d(
                 TAG, "invalid " +
-                        /*_url.value*/
                         urlString
             )
         }
@@ -109,18 +112,18 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
 
     fun setSourceText(src: String) {
         if (src.length > 0) {
-            this.src = src
+            this.srcText = src
         }
     }
 
     fun addTranslation(dst: CharSequence?) {
-        if (src.isNotBlank() && !dst.isNullOrBlank()) {
+        if (srcText.isNotBlank() && !dst.isNullOrBlank()) {
             viewModelScope.launch(Dispatchers.IO) {
-                translationRepository.insertTranslation(src, dst.toString())
+                translationRepository.insertTranslation(srcText, dst.toString())
                 updateLastTranslations()
             }
         } else {
-            src = ""
+            srcText = ""
         }
     }
 
@@ -146,7 +149,7 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
                             % it.size
                 ) as
                         Translation
-                Log.d(TAG,"update translation to show: "+_translationToShow.value)
+                Log.d(TAG, "update translation to show: " + _translationToShow.value)
 
             }
         }
@@ -154,18 +157,27 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
 
     private fun updateLastTranslations() {
         lastTranslations = translationRepository.getTranslations(LAST_TRANSLATIONS_COUNT)
-        if (lastTranslations.isEmpty()){
+        if (lastTranslations.isEmpty()) {
             lastTranslations.add(Translation())
         }
         lastTranslationsIterator = 0
         updateTranslationToShow()
     }
 
-    fun showPreferences(show:Boolean){
-        _showPreferences.value=show
+    fun showPreferences(show: Boolean) {
+        _showPreferences.value = show
     }
-    fun setEngine(engine:String){
-        _engineUrl.value=engine
+
+    fun setEngine(engine: String) {
+        _engineUrl.value = engine
         setUrl(address.value.text)
+    }
+
+    fun setSessionsManagerObserver(sessionObserver: SessionObserver) {
+        sessionsManager.setObserver(sessionObserver)
+    }
+
+    fun getActiveSession(): GeckoSession {
+        return sessionsManager.get(activeSession)
     }
 }

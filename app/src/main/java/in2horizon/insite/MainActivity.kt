@@ -23,10 +23,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import dagger.hilt.android.AndroidEntryPoint
 import in2horizon.insite.gecko.SessionObserver
-import in2horizon.insite.gecko.SessionsManager
 import in2horizon.insite.ui.MainComposable
 import in2horizon.insite.ui.theme.InsiteTheme
-import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -36,11 +34,6 @@ class MainActivity :
     private val TAG = javaClass.name
     val viewModel: TransViewModel by viewModels()
 
-
-    @Inject
-    lateinit var sessionsManager: SessionsManager
-
-
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         Log.d(TAG, "got it")
         return super.onTouchEvent(event)
@@ -48,7 +41,7 @@ class MainActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        sessionsManager.setObserver(this)
+        viewModel.setSessionsManagerObserver(this)
 
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -65,9 +58,7 @@ class MainActivity :
                     color = MaterialTheme.colorScheme.background
                 ) {
 
-                  MainComposable(sessionsManager)
-                    //    MainScaffold(sessionsManager)
-
+                  MainComposable()
                 }
             }
         }
@@ -96,11 +87,10 @@ class MainActivity :
 
             SessionObserver.Action.NAVIGATE -> {
                 Log.d(TAG, "address set to " + data)
-                //      viewModel.setUrl(data)
 
                 (data.getString(SessionObserver.TEXT))?.let {
                     viewModel.setAddress(TextFieldValue(it))
-                    viewModel.mUrl = it
+                        viewModel.setUrl(it)
                 }
             }
         }

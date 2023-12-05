@@ -10,7 +10,7 @@ import in2horizon.insite.gecko.SessionsManager
 import in2horizon.insite.preferences.PreferencesView
 
 @Composable
-fun MainComposable(sessionsManager: SessionsManager) {
+fun MainComposable() {
 
     val viewModel:TransViewModel=hiltViewModel()
     val showPreferences=viewModel.showPreferences.collectAsState()
@@ -18,6 +18,6 @@ fun MainComposable(sessionsManager: SessionsManager) {
     if (showPreferences.value) {
         PreferencesView()
     } else {
-        MainScaffold(sessionsManager = sessionsManager)
+        MainScaffold()
     }
 }
