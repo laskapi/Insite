@@ -35,7 +35,7 @@ class MainActivity :
     val viewModel: TransViewModel by viewModels()
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        Log.d(TAG, "got it")
+        Log.d(TAG, "onTouchEvent")
         return super.onTouchEvent(event)
     }
 
@@ -90,7 +90,7 @@ class MainActivity :
 
                 (data.getString(SessionObserver.TEXT))?.let {
                     viewModel.setAddress(TextFieldValue(it))
-                        viewModel.setUrl(it)
+//                    viewModel.setUrl()
                 }
             }
         }

@@ -13,11 +13,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class SessionsManager @Inject constructor(@ApplicationContext var ctx: Context) {
+class SessionsManager @Inject constructor(@ApplicationContext private var appContext: Context) {
 
     private var observer: SessionObserver? = null
 
-    private var runtime = GeckoRuntime.create(ctx)
+    private var runtime = GeckoRuntime.create(appContext)
 
     private val selDelegate = object : SelectionActionDelegate {
         override fun onShowActionRequest(

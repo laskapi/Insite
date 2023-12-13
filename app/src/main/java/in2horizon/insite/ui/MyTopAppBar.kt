@@ -1,4 +1,4 @@
-package in2horizon.insite
+package in2horizon.insite.ui
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -33,6 +33,8 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import in2horizon.insite.SearchTextField
+import in2horizon.insite.TransViewModel
 import org.mozilla.geckoview.GeckoSession
 
 
@@ -40,11 +42,11 @@ import org.mozilla.geckoview.GeckoSession
 fun MyTopAppBar(session: GeckoSession) {
     val TAG = "MyTopAppBar"
     val viewModel: TransViewModel = hiltViewModel()
-    val address = viewModel.address.collectAsState()
+    val address = viewModel.searchText.collectAsState()
     val focusManager = LocalFocusManager.current
     var selectionRange: TextRange? = null
 
-    val searchTextState=remember{ mutableStateOf("") }
+//    val address=remember{ mutableStateOf(TextFieldValue("")) }
 
     var searchFocused by remember {
         mutableStateOf(false)
@@ -64,10 +66,10 @@ fun MyTopAppBar(session: GeckoSession) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+
         IconButton(
             onClick = {
 
-//                viewModel.goBack(true)
                 session.goBack()
 
             }, modifier = Modifier.wrapContentSize(
@@ -84,6 +86,8 @@ fun MyTopAppBar(session: GeckoSession) {
 
                 val selection = selectionRange ?: it.selection
                 selectionRange = null
+                //      address.value=
+                //
                 viewModel.setAddress(
                     it.copy(
                         annotatedString = it.annotatedString,
@@ -104,20 +108,22 @@ fun MyTopAppBar(session: GeckoSession) {
                         searchFocused = true
                         val text = address.value.text
                         selectionRange = TextRange(0, text.length)
-                        viewModel.setAddress(
-                            address.value.copy(
-                                annotatedString = address.value.annotatedString,
-                                selection = address.value.selection,
-                                composition = address.value.composition
-                            )
-                        )
+                        /*
+                                                viewModel.setAddress(
+                                                    address.value.copy(
+                                                        annotatedString = address.value.annotatedString,
+                                                        selection = address.value.selection,
+                                                        composition = address.value.composition
+                                                    )
+                                                )
+                        */
 
                     } else {
                         searchFocused = false
                     }
                 }, keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {
-                viewModel.setUrl(address.value.text)
+                viewModel.setUrl(/*address.value.text*/)
 //                session.loadUri(viewModel.mUrl)
                 focusManager.clearFocus()
             }),
@@ -129,7 +135,6 @@ fun MyTopAppBar(session: GeckoSession) {
         IconButton(
             onClick = {
                 session.goForward()
-                //         viewModel.goForward(true)
             }, modifier = Modifier.wrapContentSize(
                 unbounded = true
             )

@@ -4,9 +4,10 @@ import android.os.Bundle
 
 interface SessionObserver {
 
+
        companion object {
-           val COORDS = "coords"
-           val TEXT = "text"
+           const val COORDS = "coords"
+           const val TEXT = "text"
        }
 
     enum class Action{

@@ -4,4 +4,10 @@
     <string name="Google">https://www.google.pl/search?q=</string>
     <string name="DuckDuckGo">https://duckduckgo.com/</string>
     <string name="Bing">https://www.bing.com/search?q=</string>
+    <string name="prefs">preferences</string>
+    <string name="setStartPage">"Set start page to current"</string>
+    <string name="settings">Settings</string>
+    <string name="close">Close\n</string>
+    <string name="selectEngine">Select engine</string>
+    <string name="useCurrentPage">use current page</string>
 </resources>

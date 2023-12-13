@@ -1,5 +1,6 @@
 package in2horizon.insite
 
+import android.content.Context
 import android.util.Log
 import android.util.Patterns
 import android.util.SizeF
@@ -24,13 +25,21 @@ import javax.inject.Inject
 import kotlin.concurrent.schedule
 
 @HiltViewModel
-class TransViewModel @Inject constructor(private val translationRepository: TranslationRepository) :
+class TransViewModel @Inject constructor(
+    private val translationRepository:
+    TranslationRepository, @ApplicationContext
+    appContext: Context
+) :
     ViewModel() {
 
+
+    private val START_PAGE="page"
     private val TAG = javaClass.name
 
-    @ApplicationContext
-    private lateinit var appContext: ApplicationContext
+    private val prefs = appContext.getSharedPreferences(
+        appContext.getString(R.string.prefs),
+        Context.MODE_PRIVATE
+    )
 
     @Inject
     lateinit var sessionsManager: SessionsManager
@@ -40,17 +49,17 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
 
     private var lastTranslations = Collections.EMPTY_LIST
     private var lastTranslationsIterator = 0
-    private var lastTranslationsViewUpdateTimer= Timer()
+    private var lastTranslationsViewUpdateTimer = Timer()
 
 
     private val _translationToShow = MutableStateFlow(Translation())
     val translationToShow = _translationToShow.asStateFlow()
 
-    private val _address = MutableStateFlow(TextFieldValue(""))
-    val address = _address.asStateFlow()
+    private val _searchText = MutableStateFlow(TextFieldValue(""/*"https://www.tagesschau.de/"*/))
+    val searchText = _searchText.asStateFlow()
 
-    private val _mUrl = MutableStateFlow("https://www.tagesschau.de/")
-    var mUrl = _mUrl.asStateFlow()
+    private val _url = MutableStateFlow("")
+    var url = _url.asStateFlow()
 
     private var activeSession = 0
     var selectionCoords: SizeF? = null
@@ -60,12 +69,19 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
 
     private var srcText = ""
 
-    private var _engineUrl = MutableStateFlow("")
+    private var _engineUrl = MutableStateFlow("https://duckduckgo.com/")
     var engineUrl = _engineUrl.asStateFlow()
 
 
+    private var rawSearchText = ""
 
     init {
+        Log.d(TAG, "ViewModel initalization")
+
+       prefs.getString(START_PAGE,"")?.let { _searchText.value=TextFieldValue(it) }
+
+        Log.d(TAG, "VurlValue="+searchText.value)
+
         viewModelScope.launch(Dispatchers.IO) {
             updateLastTranslations()
         }
@@ -79,33 +95,38 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
     }
 
 
-    fun setActiveSession(index: Int) {
-       activeSession = index
-    }
-
     fun setAddress(addr: TextFieldValue) {
-        _address.value = addr
+        _searchText.value = addr
     }
 
-    fun setUrl(urlString: String) {
+    fun setUrl() {
+    /*    if (rawSearchText.isNotEmpty()) {
+            setAddress(TextFieldValue(rawSearchText))
+        }*/
 
         if (Patterns.WEB_URL.matcher(
-                urlString
+                searchText.value.text
             ).matches()
         ) {
-            val guessedUrl = URLUtil.guessUrl(
-                urlString
-            )
-            _mUrl.value = guessedUrl
+            rawSearchText = ""
+
             Log.d(
-                TAG, "valid " +
-                        urlString + " :: " + mUrl.value//
+                TAG, "guessedUrl::" + URLUtil.guessUrl(
+                    searchText.value.text
+                )
+            )
+
+            _url.value = URLUtil.guessUrl(
+                searchText.value.text
+            )
+            Log.d(
+                TAG, "validUrl ::" + url.value
             )
         } else {
-            _mUrl.value = engineUrl.value + address.value.text
-         Log.d(
-                TAG, "invalid " +
-                        urlString
+            rawSearchText = searchText.value.text
+            _url.value = engineUrl.value + searchText.value.text
+            Log.d(
+                TAG, "invalidUrl " + url.value
             )
         }
     }
@@ -115,6 +136,13 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
             this.srcText = src
         }
     }
+
+
+
+    fun setSelectionCenterCoords(coords: SizeF?) {
+        this.selectionCoords = coords
+    }
+
 
     fun addTranslation(dst: CharSequence?) {
         if (srcText.isNotBlank() && !dst.isNullOrBlank()) {
@@ -137,9 +165,6 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
     }
 
 
-    fun setSelectionCenterCoords(coords: SizeF?) {
-        this.selectionCoords = coords
-    }
 
     private fun updateTranslationToShow() {
         lastTranslations.let {
@@ -149,7 +174,7 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
                             % it.size
                 ) as
                         Translation
-                Log.d(TAG, "update translation to show: " + _translationToShow.value)
+                //   Log.d(TAG, "update translation to show: " + _translationToShow.value)
 
             }
         }
@@ -169,8 +194,14 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
     }
 
     fun setEngine(engine: String) {
+
         _engineUrl.value = engine
-        setUrl(address.value.text)
+        Log.d(TAG, "rawSearchText= " + rawSearchText)
+        if (rawSearchText.isNotEmpty()) {
+            _searchText.value = TextFieldValue(rawSearchText)
+        }
+        Log.d(TAG, "set engine to: " + engineUrl.value)
+        setUrl()
     }
 
     fun setSessionsManagerObserver(sessionObserver: SessionObserver) {
@@ -179,5 +210,13 @@ class TransViewModel @Inject constructor(private val translationRepository: Tran
 
     fun getActiveSession(): GeckoSession {
         return sessionsManager.get(activeSession)
+    }
+
+    fun setActiveSession(index: Int) {
+        activeSession = index
+    }
+
+    fun setStartPage() {
+        prefs.edit().putString(START_PAGE, _searchText.value.text).apply()
     }
 }

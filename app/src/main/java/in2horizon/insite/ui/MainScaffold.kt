@@ -28,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import in2horizon.insite.ui.DeleteButton
 import in2horizon.insite.ui.LastTranslationsView
 import in2horizon.insite.ui.MyGeckoView
+import in2horizon.insite.ui.MyTopAppBar
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -36,7 +37,7 @@ fun MainScaffold() {
     val TAG = "MainScaffold"
     val viewModel: TransViewModel = hiltViewModel()
     val translationToShow = viewModel.translationToShow.collectAsState()
-    val url=viewModel.mUrl.collectAsState()
+    val url=viewModel.url.collectAsState()
 
 
     Scaffold(topBar = {
@@ -55,7 +56,8 @@ fun MainScaffold() {
                         MyGeckoView(context, viewModel).apply {
 
                             setSession(viewModel.getActiveSession())
-         //                   session?.loadUri(url.value)
+                            viewModel.setUrl()
+                        //                   session?.loadUri(url.value)
 
                         }
                     },
