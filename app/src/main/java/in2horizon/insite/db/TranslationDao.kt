@@ -19,6 +19,9 @@ interface TranslationDao {
     @Delete
     fun deleteTranslations(vararg translations:Translation)
 
+    @Query("DELETE FROM translation")
+    fun deleteTranslations()
+
     @Query("SELECT * FROM translation ORDER BY date DESC LIMIT :count")
     fun getTranslations(count: Int):List<Translation>
 

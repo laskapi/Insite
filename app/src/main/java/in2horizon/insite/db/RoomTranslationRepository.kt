@@ -23,4 +23,8 @@ class RoomTranslationRepository @Inject constructor(private val translationDao: 
         return translationDao.deleteTranslations(translation)
     }
 
+    override fun deleteTranslations() {
+        return translationDao.deleteTranslations()
+    }
+
 }

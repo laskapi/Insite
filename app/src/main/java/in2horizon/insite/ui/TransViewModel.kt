@@ -33,7 +33,8 @@ class TransViewModel @Inject constructor(
     ViewModel() {
 
 
-    private val START_PAGE="page"
+    private val START_PAGE = "start_page"
+    private val USE_START_PAGE = "use_start_page"
     private val TAG = javaClass.name
 
     private val prefs = appContext.getSharedPreferences(
@@ -75,12 +76,19 @@ class TransViewModel @Inject constructor(
 
     private var rawSearchText = ""
 
+    var useStartPage: Boolean
+        get() = prefs.getBoolean(USE_START_PAGE, true)
+        set(value) {
+            Log.d(TAG,"Use start page: "+value)
+            prefs.edit().putBoolean(USE_START_PAGE, value).apply()
+        }
+
     init {
         Log.d(TAG, "ViewModel initalization")
 
-       prefs.getString(START_PAGE,"")?.let { _searchText.value=TextFieldValue(it) }
+        getStartPage()?.let { _searchText.value = TextFieldValue(it) }
 
-        Log.d(TAG, "VurlValue="+searchText.value)
+        Log.d(TAG, "VurlValue=" + searchText.value)
 
         viewModelScope.launch(Dispatchers.IO) {
             updateLastTranslations()
@@ -97,12 +105,13 @@ class TransViewModel @Inject constructor(
 
     fun setAddress(addr: TextFieldValue) {
         _searchText.value = addr
+        if (!useStartPage)setStartPage(addr.text)
     }
 
     fun setUrl() {
-    /*    if (rawSearchText.isNotEmpty()) {
-            setAddress(TextFieldValue(rawSearchText))
-        }*/
+        /*    if (rawSearchText.isNotEmpty()) {
+                setAddress(TextFieldValue(rawSearchText))
+            }*/
 
         if (Patterns.WEB_URL.matcher(
                 searchText.value.text
@@ -138,7 +147,6 @@ class TransViewModel @Inject constructor(
     }
 
 
-
     fun setSelectionCenterCoords(coords: SizeF?) {
         this.selectionCoords = coords
     }
@@ -163,7 +171,6 @@ class TransViewModel @Inject constructor(
         }
 
     }
-
 
 
     private fun updateTranslationToShow() {
@@ -216,7 +223,20 @@ class TransViewModel @Inject constructor(
         activeSession = index
     }
 
-    fun setStartPage() {
-        prefs.edit().putString(START_PAGE, _searchText.value.text).apply()
+    fun setStartPage(value: String) {
+        prefs.edit().putString(START_PAGE, value).apply()
     }
+
+    fun getStartPage(): String {
+        return prefs.getString(START_PAGE, "") ?: ""
+    }
+
+    fun deleteAllTranslations() {
+        viewModelScope.launch(Dispatchers.IO) {
+            Log.d(TAG, "delete all translations")
+            translationRepository.deleteTranslations()
+            updateLastTranslations()
+        }
+    }
+
 }

@@ -46,8 +46,6 @@ fun MyTopAppBar(session: GeckoSession) {
     val focusManager = LocalFocusManager.current
     var selectionRange: TextRange? = null
 
-//    val address=remember{ mutableStateOf(TextFieldValue("")) }
-
     var searchFocused by remember {
         mutableStateOf(false)
     }
@@ -86,9 +84,7 @@ fun MyTopAppBar(session: GeckoSession) {
 
                 val selection = selectionRange ?: it.selection
                 selectionRange = null
-                //      address.value=
-                //
-                viewModel.setAddress(
+              viewModel.setAddress(
                     it.copy(
                         annotatedString = it.annotatedString,
                         selection = selection,
@@ -108,23 +104,14 @@ fun MyTopAppBar(session: GeckoSession) {
                         searchFocused = true
                         val text = address.value.text
                         selectionRange = TextRange(0, text.length)
-                        /*
-                                                viewModel.setAddress(
-                                                    address.value.copy(
-                                                        annotatedString = address.value.annotatedString,
-                                                        selection = address.value.selection,
-                                                        composition = address.value.composition
-                                                    )
-                                                )
-                        */
+
 
                     } else {
                         searchFocused = false
                     }
                 }, keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {
-                viewModel.setUrl(/*address.value.text*/)
-//                session.loadUri(viewModel.mUrl)
+                viewModel.setUrl()
                 focusManager.clearFocus()
             }),
             singleLine = true,

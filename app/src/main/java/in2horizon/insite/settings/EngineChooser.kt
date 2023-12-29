@@ -1,9 +1,9 @@
 package in2horizon.insite.settings
 
 import android.content.Context
-import androidx.compose.foundation.layout.Column
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.MaterialTheme
@@ -34,13 +34,13 @@ fun EngineChooser(color: Color) {
     )
 
     val selectedEngine = viewModel.engineUrl.collectAsState()
-    Column {
 
-        Subtitle(text = ctx.getString(R.string.selectEngine), color =color )
 
-        engineOptions.forEach { name ->
-            Row(Modifier
-                .fillMaxWidth(1f)
+
+
+    engineOptions.forEach { name ->
+        Row(horizontalArrangement = Arrangement.Start,
+            modifier = Modifier
                 .padding(4.dp)
                 .selectable(selected = (getResource4Name(ctx, name).equals(
                     selectedEngine
@@ -51,21 +51,22 @@ fun EngineChooser(color: Color) {
 
                     }
                 ),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(colors=RadioButtonDefaults.colors(selectedColor = color,
-                   unselectedColor = color ),
-                    selected = (getResource4Name(ctx, name).equals(
-                        selectedEngine
-                            .value
-                    )),
-                    onClick = { viewModel.setEngine(getResource4Name(ctx, name)) })
-                Text(
-                    color = color,
-                    text = name, style = MaterialTheme.typography.bodyMedium.merge(),
-                    modifier = Modifier.padding(4.dp)
-                )
-            }
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RadioButton(colors = RadioButtonDefaults.colors(
+                selectedColor = color,
+                unselectedColor = color
+            ),
+                selected = (getResource4Name(ctx, name).equals(
+                    selectedEngine
+                        .value
+                )),
+                onClick = { viewModel.setEngine(getResource4Name(ctx, name)) })
+            Text(
+                color = color,
+                text = name, style = MaterialTheme.typography.bodyMedium.merge(),
+                modifier = Modifier.padding(4.dp)
+            )
         }
     }
 }

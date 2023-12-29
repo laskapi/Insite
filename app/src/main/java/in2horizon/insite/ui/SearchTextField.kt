@@ -46,7 +46,7 @@ fun SearchTextField(
     cursorBrush: Brush = SolidColor(Color.Black),
 ) {
     BasicTextField(
-//        modifier = modifier.fillMaxWidth(),
+
         modifier=modifier,
         value = value,
         onValueChange = onValueChange,
@@ -67,7 +67,7 @@ fun SearchTextField(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (leadingIcon != null) leadingIcon()
-                Box(/*Modifier.weight(1f)*/) {
+                Box() {
                     if (value.text.isEmpty()) Text(
                         placeholderText,
                         style = textStyle

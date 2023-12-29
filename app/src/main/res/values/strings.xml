@@ -5,9 +5,12 @@
     <string name="DuckDuckGo">https://duckduckgo.com/</string>
     <string name="Bing">https://www.bing.com/search?q=</string>
     <string name="prefs">preferences</string>
-    <string name="setStartPage">"Set start page to current"</string>
+    <string name="useStartPage">Use start page</string>
     <string name="settings">Settings</string>
-    <string name="close">Close\n</string>
+    <string name="close">Close</string>
     <string name="selectEngine">Select engine</string>
-    <string name="useCurrentPage">use current page</string>
+    <string name="useCurrent">Use current</string>
+    <string name="rememberLast">remember last page\n</string>
+    <string name="deleteDictionary">Delete dictionary</string>
+    <string name="confirmDeleteDictionary">Are you sure you want to delete all dictionary?</string>
 </resources>
