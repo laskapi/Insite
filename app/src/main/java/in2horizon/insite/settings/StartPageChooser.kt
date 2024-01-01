@@ -1,18 +1,18 @@
 package in2horizon.insite.settings
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -21,10 +21,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.End
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
@@ -39,12 +38,16 @@ import in2horizon.insite.TransViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 
-fun StartPageChooser(color: Color, enabled: Boolean) {
+fun StartPageChooser(
+    enabled: Boolean,
+    hideKeyboard: Boolean = false,
+    resetHideKeyboard: () -> Unit
+) {
 
     val viewModel: TransViewModel = hiltViewModel()
     val currentUrl = viewModel.searchText.collectAsState()
 
-    val colors= MaterialTheme.colorScheme
+    val colors = MaterialTheme.colorScheme
     var startPage = remember { mutableStateOf(TextFieldValue(viewModel.getStartPage())) }
 
     val focusManager = LocalFocusManager.current
@@ -62,7 +65,7 @@ fun StartPageChooser(color: Color, enabled: Boolean) {
         Row(
             horizontalArrangement = Arrangement.Start,
             modifier = Modifier
-                .padding(4.dp)
+                //    .padding(4.dp)
                 .selectable(selected = (viewModel.useStartPage),
                     onClick = {
                         viewModel.useStartPage = true
@@ -74,15 +77,29 @@ fun StartPageChooser(color: Color, enabled: Boolean) {
 
         {
 
-            Column() {
-
+            Column(Modifier.fillMaxWidth()) {
 
                 TextField(
-                    colors= TextFieldDefaults.textFieldColors(containerColor = colors.background),
-                    shape= RoundedCornerShape(10.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = colors.surface,
+                        textColor = colors.onPrimaryContainer,
+                        unfocusedIndicatorColor = colors.surface,
+                        focusedIndicatorColor = colors.surface,
+                        disabledIndicatorColor = colors.surface,
+                    ),
+
+                    shape = RoundedCornerShape(10.dp),
+                    textStyle = MaterialTheme.typography.bodyLarge,
+                    //TextStyle(color = colors.onPrimaryContainer, fontSize =
+                    //MaterialTheme.typography.bodyMedium.fontSize),
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp)
+                        .fillMaxWidth(0.9f)
+                        .border(0.dp, colors.primary, RoundedCornerShape(10.dp))
+                        .align(alignment = CenterHorizontally)
+                        /*   .background(color=colors.primaryContainer,
+                               shape= RoundedCornerShape(10.dp)
+                           )
+                      */
                         .onFocusChanged { focusState ->
                             if (focusState.isFocused) {
                                 searchFocused = true
@@ -93,12 +110,12 @@ fun StartPageChooser(color: Color, enabled: Boolean) {
                                 searchFocused = false
                             }
                         },
-
+                    singleLine = true,
                     enabled = enabled,
                     value = startPage.value,
                     onValueChange = {
 
-                     //   val selection = selectionRange ?: it.selection
+                        //   val selection = selectionRange ?: it.selection
                         selectionRange = null
                         startPage.value = it.copy()
                     },
@@ -110,14 +127,22 @@ fun StartPageChooser(color: Color, enabled: Boolean) {
                     })
                 )
 
-                SettingsButton(
-                    modifier = Modifier.align(End),
-                    enabled = enabled,
-                    text = LocalContext.current.getString(R.string.useCurrent),
-                ) {
-                    startPage.value = currentUrl.value.copy()
-                    viewModel.setStartPage(startPage.value.text)
+                if (hideKeyboard) {
+                    focusManager.clearFocus()
+                    resetHideKeyboard()
                 }
+
+                SettingsButton(
+//                    modifier = Modifier.align(End),
+                    enabled = enabled,
+                    onClick = {
+                        startPage.value = currentUrl.value.copy()
+                        viewModel.setStartPage(startPage.value.text)
+                    }
+                ) {
+                    Text(text = LocalContext.current.getString(R.string.useCurrent))
+                }
+
 
             }
         }

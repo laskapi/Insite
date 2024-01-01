@@ -13,4 +13,5 @@
     <string name="rememberLast">remember last page\n</string>
     <string name="deleteDictionary">Delete dictionary</string>
     <string name="confirmDeleteDictionary">Are you sure you want to delete all dictionary?</string>
+    <string name="delete">Delete</string>
 </resources>

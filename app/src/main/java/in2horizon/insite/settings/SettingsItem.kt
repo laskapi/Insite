@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -23,31 +24,41 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import kotlin.reflect.KMutableProperty0
 
 @Composable
 fun SettingsItem(
-    title: String, switchValue: KMutableProperty0<Boolean>? = null, color: Color, content:
+    title: String,/* switchValue: KMutableProperty0<Boolean>? = null,*/
+    switchValue:Boolean?=null,setSwitchValue: (Boolean)->Unit={},content:
     @Composable()
         (enabled: Boolean) ->
     Unit
 ) {
 
+    val colors= MaterialTheme.colorScheme
 
-    var switchState by remember { mutableStateOf(switchValue?.get() ?: true) }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    var switchState by remember { mutableStateOf(switchValue/*?.get()*/ ?: true) }
+
+    Column(modifier = Modifier.fillMaxWidth()
+        .padding(10.dp)) {
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Subtitle(text = title, color = color)
+            Subtitle(text = title)
 
             switchValue?.let {
 
-                Switch(
+                Switch(modifier=Modifier.padding(horizontal = 10.dp, vertical = 0.dp),
                     colors = SwitchDefaults.colors(
 
-                        uncheckedTrackColor = MaterialTheme.colorScheme.background,
-                        uncheckedBorderColor = color),
+                        uncheckedTrackColor = colors.background,
+                        uncheckedBorderColor = colors.onBackground,
+                        checkedBorderColor = colors.onBackground,
+                        checkedIconColor = colors.onPrimary,
+                        checkedTrackColor = colors.background,
+                        checkedThumbColor = colors.primary
+                    ),
                     checked = switchState,
                     thumbContent = if (switchState) {
                         {
@@ -63,22 +74,16 @@ fun SettingsItem(
 
                     onCheckedChange = {
                         switchState = it
-                        switchValue.set(it)
+                       setSwitchValue(it)// switchValue.set(it)
                     },
                 )
             }
         }
 
-        Row(
-        )
-        {
-      //      Spacer(modifier = Modifier.weight(1f))
-            Column(
-                horizontalAlignment = Alignment.Start
+       Column(modifier = Modifier.fillMaxWidth(1f)
+        //        horizontalAlignment = Alignment.Start
             ) {
                 content(switchState)
             }
-       //     Spacer(modifier = Modifier.weight(1f))
-        }
     }
 }

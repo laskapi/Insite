@@ -10,7 +10,7 @@ import in2horizon.insite.R
 import in2horizon.insite.TransViewModel
 
 @Composable
-fun DeleteDictionaryDialog() {
+fun DeleteDictionaryDialog(close: () -> Unit) {
 
 
     val viewModel: TransViewModel = hiltViewModel()
@@ -24,18 +24,19 @@ fun DeleteDictionaryDialog() {
             TextButton(
                 onClick = {
                     viewModel.deleteAllTranslations()
+                    close()
                 }
             ) {
-                Text("Confirm")
+                Text(ctx.getString(android.R.string.ok))
             }
         },
         dismissButton = {
             TextButton(
                 onClick = {
-
+                    close()
                 }
             ) {
-                Text("Dismiss")
+                Text(ctx.getString(android.R.string.cancel))
             }
         }
     )

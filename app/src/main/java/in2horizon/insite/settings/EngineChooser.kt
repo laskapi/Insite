@@ -22,10 +22,11 @@ import in2horizon.insite.R
 import in2horizon.insite.TransViewModel
 
 @Composable
-fun EngineChooser(color: Color) {
+fun EngineChooser() {
 
     val viewModel: TransViewModel = hiltViewModel()
     val ctx = LocalContext.current
+    val colors=MaterialTheme.colorScheme
 
     val engineOptions = listOf(
         ctx.resources.getResourceEntryName(R.string.Google),
@@ -54,8 +55,8 @@ fun EngineChooser(color: Color) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             RadioButton(colors = RadioButtonDefaults.colors(
-                selectedColor = color,
-                unselectedColor = color
+                selectedColor = colors.onBackground,
+                unselectedColor = colors.onBackground
             ),
                 selected = (getResource4Name(ctx, name).equals(
                     selectedEngine
@@ -63,7 +64,7 @@ fun EngineChooser(color: Color) {
                 )),
                 onClick = { viewModel.setEngine(getResource4Name(ctx, name)) })
             Text(
-                color = color,
+                color = colors.onBackground,
                 text = name, style = MaterialTheme.typography.bodyMedium.merge(),
                 modifier = Modifier.padding(4.dp)
             )

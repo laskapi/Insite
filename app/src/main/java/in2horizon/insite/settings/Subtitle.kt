@@ -10,7 +10,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun Subtitle(text: String,  color: Color){
+fun Subtitle(text: String){
     Text(text=text,style=MaterialTheme.typography.titleMedium, textAlign = TextAlign.Start,
-        color=color, modifier = Modifier.padding(4.dp))
+        color=MaterialTheme.colorScheme.onBackground)
 }
