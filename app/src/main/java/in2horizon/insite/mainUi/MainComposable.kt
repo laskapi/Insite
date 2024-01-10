@@ -1,4 +1,4 @@
-package in2horizon.insite.ui
+package in2horizon.insite.mainUi
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState

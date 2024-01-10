@@ -34,12 +34,23 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
+        /*debug{
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+
+        }*/
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -95,6 +106,15 @@ dependencies {
 
     implementation ("androidx.room:room-runtime:2.6.0")
     kapt ("androidx.room:room-compiler:2.6.0")
+
+
+    implementation("androidx.compose.material:material-icons-extended")
+
+    implementation("androidx.paging:paging-common-ktx:3.2.1")
+    implementation ("androidx.paging:paging-common:3.2.1")
+      //  implementation ("androidx.paging:paging-runtime-ktx:3.2.1")
+        implementation ("androidx.paging:paging-compose:3.2.1")
+        implementation ("androidx.room:room-paging:2.6.1")
 
 }
 kapt {

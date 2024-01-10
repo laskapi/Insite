@@ -1,4 +1,4 @@
-package in2horizon.insite.ui.theme
+package in2horizon.insite.mainUi.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

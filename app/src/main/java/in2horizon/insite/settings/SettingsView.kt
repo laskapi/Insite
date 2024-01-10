@@ -1,9 +1,10 @@
 package in2horizon.insite.settings
 
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -60,7 +61,7 @@ fun SettingsView() {
         SettingsItem(
             title = ctx.getString(R.string.selectEngine)
         ) {
-            EngineChooser()
+            EngineChooserItem()
 
             MyDivider()
             SettingsItem(
@@ -69,8 +70,11 @@ fun SettingsView() {
                 setSwitchValue = { switchValue -> viewModel.useStartPage = switchValue }
 
             ) {
-                StartPageChooser(enabled = it, hideKeyboard = hideKeyboard) { hideKeyboard = false }
+                StartPageChooserItem(enabled = it)/*, hideKeyboard = hideKeyboard) { hideKeyboard
+                 = false }*/
             }
+
+
 
             MyDivider()
             SettingsItem(title = ctx.getString(R.string.deleteDictionary)) {

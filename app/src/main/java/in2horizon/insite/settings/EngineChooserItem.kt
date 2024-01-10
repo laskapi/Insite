@@ -1,7 +1,6 @@
 package in2horizon.insite.settings
 
 import android.content.Context
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -14,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -22,7 +20,7 @@ import in2horizon.insite.R
 import in2horizon.insite.TransViewModel
 
 @Composable
-fun EngineChooser() {
+fun EngineChooserItem() {
 
     val viewModel: TransViewModel = hiltViewModel()
     val ctx = LocalContext.current

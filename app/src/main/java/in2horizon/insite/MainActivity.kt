@@ -4,7 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.FocusFinder
 import android.view.MotionEvent
+import android.view.WindowInsets
+import android.view.inputmethod.InputMethod
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
@@ -19,12 +23,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import dagger.hilt.android.AndroidEntryPoint
+import in2horizon.insite.gecko.MyNavigationDelegate
 import in2horizon.insite.gecko.SessionObserver
-import in2horizon.insite.ui.MainComposable
-import in2horizon.insite.ui.theme.InsiteTheme
+import in2horizon.insite.mainUi.MainComposable
+import in2horizon.insite.mainUi.theme.InsiteTheme
+import org.mozilla.geckoview.GeckoSession
 
 
 @AndroidEntryPoint
@@ -33,12 +40,26 @@ class MainActivity :
 
     private val TAG = javaClass.name
     val viewModel: TransViewModel by viewModels()
-
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         Log.d(TAG, "onTouchEvent")
         return super.onTouchEvent(event)
     }
 
+
+    //TO DO :change for OnBackPressedCallback
+    override fun onBackPressed() {
+
+        if (viewModel.showPreferences.value) {
+            viewModel.showPreferences(false)
+        } else {
+            val session = viewModel.getActiveSession()
+            if ((session.navigationDelegate as MyNavigationDelegate).canGoBack) {
+                session.goBack()
+            } else {
+                super.onBackPressed()
+            }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.setSessionsManagerObserver(this)
@@ -58,12 +79,11 @@ class MainActivity :
                     color = MaterialTheme.colorScheme.background
                 ) {
 
-                  MainComposable()
+                    MainComposable()
                 }
             }
         }
     }
-
 
 
     override fun update(action: SessionObserver.Action, data: Bundle) {

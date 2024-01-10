@@ -1,5 +1,6 @@
 package com.gmail.in2horizon.insite.db
 
+import androidx.paging.PagingSource
 import androidx.room.*
 
 @Dao
@@ -24,6 +25,9 @@ interface TranslationDao {
 
     @Query("SELECT * FROM translation ORDER BY date DESC LIMIT :count")
     fun getTranslations(count: Int):List<Translation>
+
+    @Query("SELECT * FROM translation ORDER BY date DESC")
+    fun pagingSource():PagingSource<Int,Translation>
 
 }
 

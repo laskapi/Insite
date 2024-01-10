@@ -1,4 +1,4 @@
-package in2horizon.insite.ui
+package in2horizon.insite.mainUi
 
 import android.content.ClipboardManager
 import android.content.Context

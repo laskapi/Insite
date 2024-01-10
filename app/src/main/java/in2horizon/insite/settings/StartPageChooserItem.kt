@@ -1,8 +1,10 @@
 package in2horizon.insite.settings
 
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.selection.selectable
@@ -15,35 +17,36 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import in2horizon.insite.R
 import in2horizon.insite.TransViewModel
+import in2horizon.insite.mainUi.Keyboard
+import in2horizon.insite.mainUi.KeyboardAsState
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-
-fun StartPageChooser(
-    enabled: Boolean,
+fun StartPageChooserItem(
+    enabled: Boolean/*,
     hideKeyboard: Boolean = false,
-    resetHideKeyboard: () -> Unit
+    resetHideKeyboard: () -> Unit*/
 ) {
 
+    val TAG = "StartPageChooserItem"
     val viewModel: TransViewModel = hiltViewModel()
     val currentUrl = viewModel.searchText.collectAsState()
 
@@ -52,15 +55,21 @@ fun StartPageChooser(
 
     val focusManager = LocalFocusManager.current
 
-    var selectionRange: TextRange? = null
-    var searchFocused by remember {
+  //  var selectionRange: TextRange? = null
+
+   /* var searchFocused by remember {
         mutableStateOf(false)
     }
+*/
+    val isKeyboardOpen by KeyboardAsState()
 
-
+    LaunchedEffect(isKeyboardOpen) {
+        if (isKeyboardOpen== Keyboard.Closed) {
+            focusManager.clearFocus()
+        }
+    }
 
     Column(Modifier.fillMaxWidth()) {
-
 
         Row(
             horizontalArrangement = Arrangement.Start,
@@ -102,12 +111,13 @@ fun StartPageChooser(
                       */
                         .onFocusChanged { focusState ->
                             if (focusState.isFocused) {
-                                searchFocused = true
+                                Log.d(TAG, "is Focused")
+                 //               searchFocused = true
                                 val text = startPage.value.text
-                                selectionRange = TextRange(0, text.length)
+           //                     selectionRange = TextRange(0, text.length)
 
                             } else {
-                                searchFocused = false
+                   //             searchFocused = false
                             }
                         },
                     singleLine = true,
@@ -116,7 +126,7 @@ fun StartPageChooser(
                     onValueChange = {
 
                         //   val selection = selectionRange ?: it.selection
-                        selectionRange = null
+                     //   selectionRange = null
                         startPage.value = it.copy()
                     },
 
@@ -127,10 +137,11 @@ fun StartPageChooser(
                     })
                 )
 
-                if (hideKeyboard) {
+              /*  if (hideKeyboard) {
                     focusManager.clearFocus()
                     resetHideKeyboard()
                 }
+*/
 
                 SettingsButton(
 //                    modifier = Modifier.align(End),

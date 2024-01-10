@@ -8,6 +8,8 @@ import android.webkit.URLUtil
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.gmail.in2horizon.insite.db.Translation
 import com.gmail.in2horizon.insite.db.TranslationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,6 +17,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import in2horizon.insite.gecko.SessionObserver
 import in2horizon.insite.gecko.SessionsManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -79,9 +83,13 @@ class TransViewModel @Inject constructor(
     var useStartPage: Boolean
         get() = prefs.getBoolean(USE_START_PAGE, true)
         set(value) {
-            Log.d(TAG,"Use start page: "+value)
+            Log.d(TAG, "Use start page: " + value)
             prefs.edit().putBoolean(USE_START_PAGE, value).apply()
         }
+
+    val allTranslationsPagedFlow: Flow<PagingData<Translation>> =translationRepository
+        .getAllTranslationsPaged().cachedIn(viewModelScope)
+
 
     init {
         Log.d(TAG, "ViewModel initalization")
@@ -105,7 +113,7 @@ class TransViewModel @Inject constructor(
 
     fun setAddress(addr: TextFieldValue) {
         _searchText.value = addr
-        if (!useStartPage)setStartPage(addr.text)
+        if (!useStartPage) setStartPage(addr.text)
     }
 
     fun setUrl() {
@@ -172,71 +180,77 @@ class TransViewModel @Inject constructor(
 
     }
 
+    fun getTranslations() {
+        //    return viewModelScope.launch(Dispatchers.IO) {
+        //   allTranslations=   translationRepository.getTranslations()
 
-    private fun updateTranslationToShow() {
-        lastTranslations.let {
-            if (it.isNotEmpty()) {
-                _translationToShow.value = it.get(
-                    (lastTranslationsIterator++)
-                            % it.size
-                ) as
-                        Translation
-                //   Log.d(TAG, "update translation to show: " + _translationToShow.value)
 
-            }
+}
+
+private fun updateTranslationToShow() {
+    lastTranslations.let {
+        if (it.isNotEmpty()) {
+            _translationToShow.value = it.get(
+                (lastTranslationsIterator++)
+                        % it.size
+            ) as
+                    Translation
+            //   Log.d(TAG, "update translation to show: " + _translationToShow.value)
+
         }
     }
+}
 
-    private fun updateLastTranslations() {
-        lastTranslations = translationRepository.getTranslations(LAST_TRANSLATIONS_COUNT)
-        if (lastTranslations.isEmpty()) {
-            lastTranslations.add(Translation())
-        }
-        lastTranslationsIterator = 0
-        updateTranslationToShow()
+private fun updateLastTranslations() {
+    lastTranslations = translationRepository.getTranslations(LAST_TRANSLATIONS_COUNT)
+    if (lastTranslations.isEmpty()) {
+        lastTranslations.add(Translation())
     }
+    lastTranslationsIterator = 0
+    updateTranslationToShow()
+}
 
-    fun showPreferences(show: Boolean) {
-        _showPreferences.value = show
+fun showPreferences(show: Boolean) {
+    _showPreferences.value = show
+}
+
+fun setEngine(engine: String) {
+
+    _engineUrl.value = engine
+    Log.d(TAG, "rawSearchText= " + rawSearchText)
+    if (rawSearchText.isNotEmpty()) {
+        _searchText.value = TextFieldValue(rawSearchText)
     }
+    Log.d(TAG, "set engine to: " + engineUrl.value)
+    setUrl()
+}
 
-    fun setEngine(engine: String) {
+fun setSessionsManagerObserver(sessionObserver: SessionObserver) {
+    sessionsManager.setObserver(sessionObserver)
+}
 
-        _engineUrl.value = engine
-        Log.d(TAG, "rawSearchText= " + rawSearchText)
-        if (rawSearchText.isNotEmpty()) {
-            _searchText.value = TextFieldValue(rawSearchText)
-        }
-        Log.d(TAG, "set engine to: " + engineUrl.value)
-        setUrl()
+fun getActiveSession(): GeckoSession {
+    return sessionsManager.get(activeSession)
+}
+
+fun setActiveSession(index: Int) {
+    activeSession = index
+}
+
+fun setStartPage(value: String) {
+    prefs.edit().putString(START_PAGE, value).apply()
+}
+
+fun getStartPage(): String {
+    return prefs.getString(START_PAGE, "") ?: ""
+}
+
+fun deleteAllTranslations() {
+    viewModelScope.launch(Dispatchers.IO) {
+        Log.d(TAG, "delete all translations")
+        translationRepository.deleteTranslations()
+        updateLastTranslations()
     }
-
-    fun setSessionsManagerObserver(sessionObserver: SessionObserver) {
-        sessionsManager.setObserver(sessionObserver)
-    }
-
-    fun getActiveSession(): GeckoSession {
-        return sessionsManager.get(activeSession)
-    }
-
-    fun setActiveSession(index: Int) {
-        activeSession = index
-    }
-
-    fun setStartPage(value: String) {
-        prefs.edit().putString(START_PAGE, value).apply()
-    }
-
-    fun getStartPage(): String {
-        return prefs.getString(START_PAGE, "") ?: ""
-    }
-
-    fun deleteAllTranslations() {
-        viewModelScope.launch(Dispatchers.IO) {
-            Log.d(TAG, "delete all translations")
-            translationRepository.deleteTranslations()
-            updateLastTranslations()
-        }
-    }
+}
 
 }
