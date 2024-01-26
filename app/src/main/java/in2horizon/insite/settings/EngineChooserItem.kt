@@ -17,7 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import in2horizon.insite.R
-import in2horizon.insite.TransViewModel
+import in2horizon.insite.mainUi.TransViewModel
 
 @Composable
 fun EngineChooserItem() {

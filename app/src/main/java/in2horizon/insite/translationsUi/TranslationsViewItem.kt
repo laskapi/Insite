@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -25,21 +24,21 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gmail.in2horizon.insite.db.Translation
 import in2horizon.insite.R
-import in2horizon.insite.TransViewModel
+import in2horizon.insite.mainUi.TransViewModel
 
 @Composable
-fun TranslationsDialogItem(translation: Translation) {
+fun TranslationsViewItem(translation: Translation) {
     val viewModel: TransViewModel = hiltViewModel()
 
- ElevatedCard(
+    ElevatedCard(
         /*colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer,
         ),
 */
-           elevation = CardDefaults.cardElevation(
-               defaultElevation = 6.dp
-           ),
-     modifier = Modifier.padding(10.dp)
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 6.dp
+        ),
+        modifier = Modifier.padding(10.dp)
     ) {
 
 
@@ -78,7 +77,6 @@ fun TranslationsDialogItem(translation: Translation) {
                 onClick = {
                     viewModel.deleteTranslation(translation)
                 }, modifier = Modifier.wrapContentSize(
-                    // unbounded = true
                 )
             ) {
                 Icon(
@@ -88,7 +86,5 @@ fun TranslationsDialogItem(translation: Translation) {
             }
 
         }
-        //       Divider()
-
-          }
     }
+}

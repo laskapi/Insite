@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import in2horizon.insite.R
-import in2horizon.insite.TransViewModel
+import in2horizon.insite.mainUi.TransViewModel
 
 @Composable
 fun DeleteDictionaryDialog(close: () -> Unit) {

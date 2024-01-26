@@ -14,5 +14,5 @@ interface SessionObserver {
         SELECT,NAVIGATE
     }
 
-    fun update(action:Action,data: Bundle)
+    fun update(action:Action, bundle: Bundle)
 }

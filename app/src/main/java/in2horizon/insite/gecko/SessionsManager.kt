@@ -2,37 +2,21 @@ package in2horizon.insite.gecko
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.util.SizeF
 import dagger.hilt.android.qualifiers.ApplicationContext
+import in2horizon.insite.mainUi.ErrorHtmlCreator
+import kotlinx.coroutines.flow.MutableStateFlow
+import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.GeckoRuntime
 import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSession.NavigationDelegate
 import org.mozilla.geckoview.GeckoSession.SelectionActionDelegate
 import org.mozilla.geckoview.GeckoSessionSettings
+import org.mozilla.geckoview.WebRequestError
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
-
-
-object MyNavigationDelegate : NavigationDelegate {
-    var canGoBack = false;
-    var observer: SessionObserver? = null
-    override fun onCanGoBack(session: GeckoSession, canGoBack: Boolean) {
-        this.canGoBack = canGoBack
-    }
-
-    override fun onLocationChange(
-        session: GeckoSession,
-        url: String?,
-        perms: MutableList<GeckoSession.PermissionDelegate.ContentPermission>
-    ) {
-        url?.let {
-            var bundle = Bundle()
-            bundle.putString(SessionObserver.TEXT, it)
-            observer?.update(SessionObserver.Action.NAVIGATE, bundle)
-        }
-        super.onLocationChange(session, url, perms)
-    }
-}
 
 @Singleton
 class SessionsManager @Inject constructor(@ApplicationContext private var appContext: Context) {
@@ -98,7 +82,7 @@ class SessionsManager @Inject constructor(@ApplicationContext private var appCon
     private fun setupSession(): GeckoSession {
 
         val settings = GeckoSessionSettings.Builder()
-            .usePrivateMode(true)
+            .usePrivateMode(false)
             .useTrackingProtection(true)
             .userAgentMode(GeckoSessionSettings.USER_AGENT_MODE_MOBILE)
             .userAgentOverride("")

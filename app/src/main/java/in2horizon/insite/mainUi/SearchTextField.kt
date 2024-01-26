@@ -12,18 +12,23 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import in2horizon.insite.mainUi.Keyboard
+import in2horizon.insite.mainUi.KeyboardAsState
 import org.w3c.dom.Text
 
 @Composable
@@ -47,6 +52,11 @@ fun SearchTextField(
     onTextLayout: (TextLayoutResult) -> Unit = {},
     cursorBrush: Brush = SolidColor(Color.Black),
 ) {
+
+
+
+
+
     BasicTextField(
 
         modifier=modifier,

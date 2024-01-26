@@ -1,6 +1,7 @@
 package in2horizon.insite.mainUi
 
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -23,31 +24,32 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.nativeKeyCode
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import in2horizon.insite.SearchTextField
-import in2horizon.insite.TransViewModel
+import kotlinx.coroutines.launch
 import org.mozilla.geckoview.GeckoSession
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MyTopAppBar(session: GeckoSession/*, hideKeyboard: Boolean, resetHideKeyboard: () -> Unit*/) {
     val TAG = "MyTopAppBar"
     val viewModel: TransViewModel = hiltViewModel()
     val address = viewModel.searchText.collectAsState()
+
     val focusManager = LocalFocusManager.current
+    val coroutineScope = rememberCoroutineScope()
+
     var selectionRange: TextRange? = null
 
     var searchFocused by remember {
@@ -55,26 +57,18 @@ fun MyTopAppBar(session: GeckoSession/*, hideKeyboard: Boolean, resetHideKeyboar
     }
 
     val isKeyboardOpen by KeyboardAsState()
-
     LaunchedEffect(isKeyboardOpen) {
-        if (isKeyboardOpen== Keyboard.Closed) {
+        if (isKeyboardOpen == Keyboard.Closed) {
             focusManager.clearFocus()
         }
     }
 
 
-
-
     Row(
         modifier = Modifier
-            .background(color = MaterialTheme.colorScheme.background/*secondaryContainer*/)
+            .background(color = MaterialTheme.colorScheme.background)
             .fillMaxWidth(1f)
-            .padding(4.dp)
-            .onSizeChanged {
-
-                Log.d(TAG, "" + it.width.dp + " :: " + it.height.dp)
-
-            },
+            .padding(4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -98,7 +92,7 @@ fun MyTopAppBar(session: GeckoSession/*, hideKeyboard: Boolean, resetHideKeyboar
 
                 val selection = selectionRange ?: it.selection
                 selectionRange = null
-                viewModel.setAddress(
+                viewModel.setSearchText(
                     it.copy(
                         annotatedString = it.annotatedString,
                         selection = selection,
@@ -106,7 +100,9 @@ fun MyTopAppBar(session: GeckoSession/*, hideKeyboard: Boolean, resetHideKeyboar
                     )
                 )
             },
+            onTextLayout = {
 
+            },
             modifier = Modifier
                 .background(
                     Color.White, RoundedCornerShape(percent = 10)
@@ -114,23 +110,21 @@ fun MyTopAppBar(session: GeckoSession/*, hideKeyboard: Boolean, resetHideKeyboar
                 .padding(4.dp)
                 .weight(1f, true)
                 .onFocusChanged { focusState ->
+                    Log.d(TAG, "focusChanged")
                     if (focusState.isFocused) {
+                        Log.d(TAG, "focusChanged is focused")
                         searchFocused = true
                         val text = address.value.text
                         selectionRange = TextRange(0, text.length)
-
+                        viewModel.setSearchText(
+                            address.value.copy(
+                                selection = selectionRange ?: TextRange(0, text.length)
+                            )
+                        )
 
                     } else {
+                        Log.d(TAG, "focusChanged is not focused")
                         searchFocused = false
-                    }
-                }
-                .onKeyEvent { event ->
-                    if (event.key.nativeKeyCode == android.view.KeyEvent.KEYCODE_BACK) {
-                        focusManager.clearFocus()
-                        true
-                    } else {
-                        false
-
                     }
                 }, keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {
@@ -140,10 +134,6 @@ fun MyTopAppBar(session: GeckoSession/*, hideKeyboard: Boolean, resetHideKeyboar
             singleLine = true,
             placeholderText = "Search"
         )
-
-
-
-        qq
 
 
         IconButton(
@@ -160,7 +150,9 @@ fun MyTopAppBar(session: GeckoSession/*, hideKeyboard: Boolean, resetHideKeyboar
 
             IconButton(
                 onClick = {
-                    viewModel.showPreferences(true)
+                    coroutineScope.launch {
+                        viewModel.pager.scrollToPage(Screen.SETTINGS.ordinal)
+                    }
                 }, modifier = Modifier.wrapContentSize(
                     unbounded = true
                 )

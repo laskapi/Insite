@@ -116,6 +116,11 @@ dependencies {
         implementation ("androidx.paging:paging-compose:3.2.1")
         implementation ("androidx.room:room-paging:2.6.1")
 
+
+    implementation ("com.google.android.gms:play-services-ads:22.6.0")
+    implementation(kotlin("reflect"))
+
+
 }
 kapt {
     correctErrorTypes = true

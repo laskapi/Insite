@@ -1,11 +1,15 @@
-package in2horizon.insite
+package in2horizon.insite.mainUi
 
 import android.content.Context
 import android.util.Log
 import android.util.Patterns
 import android.util.SizeF
 import android.webkit.URLUtil
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -14,10 +18,11 @@ import com.gmail.in2horizon.insite.db.Translation
 import com.gmail.in2horizon.insite.db.TranslationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import in2horizon.insite.R
+import in2horizon.insite.gecko.MyUrl
 import in2horizon.insite.gecko.SessionObserver
 import in2horizon.insite.gecko.SessionsManager
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,6 +32,10 @@ import java.util.Collections
 import java.util.Timer
 import javax.inject.Inject
 import kotlin.concurrent.schedule
+
+enum class Screen {
+    SETTINGS, MAIN, TRANSLATIONS
+}
 
 @HiltViewModel
 class TransViewModel @Inject constructor(
@@ -39,6 +48,7 @@ class TransViewModel @Inject constructor(
 
     private val START_PAGE = "start_page"
     private val USE_START_PAGE = "use_start_page"
+    private val CURRENT_ENGINE = "current_engine"
     private val TAG = javaClass.name
 
     private val prefs = appContext.getSharedPreferences(
@@ -63,14 +73,18 @@ class TransViewModel @Inject constructor(
     private val _searchText = MutableStateFlow(TextFieldValue(""/*"https://www.tagesschau.de/"*/))
     val searchText = _searchText.asStateFlow()
 
-    private val _url = MutableStateFlow("")
-    var url = _url.asStateFlow()
+//    private val _url = MutableStateFlow("")
+    //   var url = _url.asStateFlow()
+
+    private val _mUrl = MutableStateFlow(MyUrl())
+    var mUrl = _mUrl.asStateFlow()
 
     private var activeSession = 0
     var selectionCoords: SizeF? = null
 
-    private val _showPreferences = MutableStateFlow(false)
-    var showPreferences = _showPreferences.asStateFlow()
+    @OptIn(ExperimentalFoundationApi::class)
+    val pager = PagerState(initialPage = Screen.MAIN.ordinal)
+
 
     private var srcText = ""
 
@@ -80,6 +94,9 @@ class TransViewModel @Inject constructor(
 
     private var rawSearchText = ""
 
+    private val _bottomBarHeight = MutableStateFlow(0.dp)
+    var bottomBarHeight = _bottomBarHeight.asStateFlow()
+
     var useStartPage: Boolean
         get() = prefs.getBoolean(USE_START_PAGE, true)
         set(value) {
@@ -87,14 +104,23 @@ class TransViewModel @Inject constructor(
             prefs.edit().putBoolean(USE_START_PAGE, value).apply()
         }
 
-    val allTranslationsPagedFlow: Flow<PagingData<Translation>> =translationRepository
+    val allTranslationsPagedFlow: Flow<PagingData<Translation>> = translationRepository
         .getAllTranslationsPaged().cachedIn(viewModelScope)
 
 
     init {
         Log.d(TAG, "ViewModel initalization")
 
-        getStartPage()?.let { _searchText.value = TextFieldValue(it) }
+        prefs.getString(CURRENT_ENGINE, appContext.getString(R.string.DuckDuckGo))
+            ?.let { _engineUrl.value = it }
+
+        getStartPage().let { setSearchText(TextFieldValue(it))/*_searchText.value = TextFieldValue
+        (it, TextRange(0,it
+        .length))
+        */ }
+        /*  if(useStartPage){
+              setAddress(TextFieldValue(getStartPage()))
+          }*/
 
         Log.d(TAG, "VurlValue=" + searchText.value)
 
@@ -111,45 +137,48 @@ class TransViewModel @Inject constructor(
     }
 
 
-    fun setAddress(addr: TextFieldValue) {
+    fun setSearchText(addr: TextFieldValue) {
+        Log.d(TAG, Log.getStackTraceString(Exception()))
+
         _searchText.value = addr
         if (!useStartPage) setStartPage(addr.text)
     }
 
-    fun setUrl() {
-        /*    if (rawSearchText.isNotEmpty()) {
-                setAddress(TextFieldValue(rawSearchText))
-            }*/
 
-        if (Patterns.WEB_URL.matcher(
+    /**
+     *
+     */
+    fun setUrl() {
+
+        val isValid = Patterns.WEB_URL.matcher(
                 searchText.value.text
             ).matches()
-        ) {
+
+        if (isValid) {
             rawSearchText = ""
-
-            Log.d(
-                TAG, "guessedUrl::" + URLUtil.guessUrl(
+            _mUrl.value = MyUrl(
+                URLUtil.guessUrl(
                     searchText.value.text
-                )
-            )
-
-            _url.value = URLUtil.guessUrl(
-                searchText.value.text
+                ), true
             )
             Log.d(
-                TAG, "validUrl ::" + url.value
+                TAG, "validUrl ::" + mUrl.value.url
             )
         } else {
             rawSearchText = searchText.value.text
-            _url.value = engineUrl.value + searchText.value.text
+            _mUrl.value = MyUrl(
+                engineUrl.value + searchText.value.text,
+                false
+            )
             Log.d(
-                TAG, "invalidUrl " + url.value
+                TAG, "invalidUrl " + mUrl.value.url
             )
         }
     }
 
+
     fun setSourceText(src: String) {
-        if (src.length > 0) {
+        if (src.isNotEmpty()) {
             this.srcText = src
         }
     }
@@ -180,77 +209,84 @@ class TransViewModel @Inject constructor(
 
     }
 
-    fun getTranslations() {
-        //    return viewModelScope.launch(Dispatchers.IO) {
-        //   allTranslations=   translationRepository.getTranslations()
+    private fun updateTranslationToShow() {
+        lastTranslations.let {
+            if (it.isNotEmpty()) {
+                _translationToShow.value = it.get(
+                    (lastTranslationsIterator++)
+                            % it.size
+                ) as
+                        Translation
+                //   Log.d(TAG, "update translation to show: " + _translationToShow.value)
 
-
-}
-
-private fun updateTranslationToShow() {
-    lastTranslations.let {
-        if (it.isNotEmpty()) {
-            _translationToShow.value = it.get(
-                (lastTranslationsIterator++)
-                        % it.size
-            ) as
-                    Translation
-            //   Log.d(TAG, "update translation to show: " + _translationToShow.value)
-
+            }
         }
     }
-}
 
-private fun updateLastTranslations() {
-    lastTranslations = translationRepository.getTranslations(LAST_TRANSLATIONS_COUNT)
-    if (lastTranslations.isEmpty()) {
-        lastTranslations.add(Translation())
+    private fun updateLastTranslations() {
+        lastTranslations = translationRepository.getTranslations(LAST_TRANSLATIONS_COUNT)
+        if (lastTranslations.isEmpty()) {
+            lastTranslations.add(Translation())
+        }
+        lastTranslationsIterator = 0
+        updateTranslationToShow()
     }
-    lastTranslationsIterator = 0
-    updateTranslationToShow()
-}
 
-fun showPreferences(show: Boolean) {
-    _showPreferences.value = show
-}
+    fun setEngine(engine: String) {
 
-fun setEngine(engine: String) {
+        _engineUrl.value = engine
+        prefs.edit().putString(CURRENT_ENGINE, engine).apply()
 
-    _engineUrl.value = engine
-    Log.d(TAG, "rawSearchText= " + rawSearchText)
-    if (rawSearchText.isNotEmpty()) {
-        _searchText.value = TextFieldValue(rawSearchText)
+        Log.d(TAG, "rawSearchText= " + rawSearchText)
+        if (rawSearchText.isNotEmpty()) {
+            setSearchText(TextFieldValue(rawSearchText))
+            //_searchText.value = TextFieldValue(rawSearchText)
+
+            Log.d(TAG, "set engine to: " + engineUrl.value)
+            setUrl()
+
+        }
+        /*
+        *TODO check if works when only in condition above
+        */
+        /*
+            Log.d(TAG, "set engine to: " + engineUrl.value)
+            setUrl()
+    */
     }
-    Log.d(TAG, "set engine to: " + engineUrl.value)
-    setUrl()
-}
 
-fun setSessionsManagerObserver(sessionObserver: SessionObserver) {
-    sessionsManager.setObserver(sessionObserver)
-}
-
-fun getActiveSession(): GeckoSession {
-    return sessionsManager.get(activeSession)
-}
-
-fun setActiveSession(index: Int) {
-    activeSession = index
-}
-
-fun setStartPage(value: String) {
-    prefs.edit().putString(START_PAGE, value).apply()
-}
-
-fun getStartPage(): String {
-    return prefs.getString(START_PAGE, "") ?: ""
-}
-
-fun deleteAllTranslations() {
-    viewModelScope.launch(Dispatchers.IO) {
-        Log.d(TAG, "delete all translations")
-        translationRepository.deleteTranslations()
-        updateLastTranslations()
+    fun setSessionsManagerObserver(sessionObserver: SessionObserver) {
+        sessionsManager.setObserver(sessionObserver)
     }
-}
+
+    fun getActiveSession(): GeckoSession {
+        return sessionsManager.get(activeSession)
+    }
+
+    fun setActiveSession(index: Int) {
+        activeSession = index
+    }
+
+    fun setStartPage(value: String) {
+        prefs.edit().putString(START_PAGE, value).apply()
+    }
+
+    fun getStartPage(): String {
+        return prefs.getString(START_PAGE, "") ?: ""
+    }
+
+
+    fun setBottomBarHeight(height: Dp) {
+        _bottomBarHeight.value = height
+    }
+
+    fun deleteAllTranslations() {
+        viewModelScope.launch(Dispatchers.IO) {
+            Log.d(TAG, "delete all translations")
+            translationRepository.deleteTranslations()
+            updateLastTranslations()
+        }
+    }
+
 
 }

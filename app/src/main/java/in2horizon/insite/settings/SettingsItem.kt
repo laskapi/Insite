@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -22,7 +23,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun SettingsItem(
-    title: String,/* switchValue: KMutableProperty0<Boolean>? = null,*/
+    title: String,
     switchValue:Boolean?=null,setSwitchValue: (Boolean)->Unit={},content:
     @Composable()
         (enabled: Boolean) ->
@@ -32,9 +33,10 @@ fun SettingsItem(
     val colors= MaterialTheme.colorScheme
 
 
-    var switchState by remember { mutableStateOf(switchValue/*?.get()*/ ?: true) }
+    var switchState by remember { mutableStateOf(switchValue ?: true) }
 
-    Column(modifier = Modifier.fillMaxWidth()
+    Column(modifier = Modifier
+        .fillMaxWidth()
         .padding(10.dp)) {
 
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -67,16 +69,18 @@ fun SettingsItem(
 
                     onCheckedChange = {
                         switchState = it
-                       setSwitchValue(it)// switchValue.set(it)
+                       setSwitchValue(it)
                     },
                 )
             }
         }
 
        Column(modifier = Modifier.fillMaxWidth(1f)
-        //        horizontalAlignment = Alignment.Start
+
             ) {
                 content(switchState)
+
+                Divider(modifier=Modifier.padding(top = 10.dp))
             }
     }
 }

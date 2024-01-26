@@ -4,11 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.FocusFinder
-import android.view.MotionEvent
-import android.view.WindowInsets
-import android.view.inputmethod.InputMethod
-import android.view.inputmethod.InputMethodManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
@@ -23,15 +18,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import dagger.hilt.android.AndroidEntryPoint
-import in2horizon.insite.gecko.MyNavigationDelegate
 import in2horizon.insite.gecko.SessionObserver
-import in2horizon.insite.mainUi.MainComposable
+import in2horizon.insite.mainUi.RootComposable
+import in2horizon.insite.mainUi.TransViewModel
 import in2horizon.insite.mainUi.theme.InsiteTheme
-import org.mozilla.geckoview.GeckoSession
 
 
 @AndroidEntryPoint
@@ -40,29 +33,15 @@ class MainActivity :
 
     private val TAG = javaClass.name
     val viewModel: TransViewModel by viewModels()
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        Log.d(TAG, "onTouchEvent")
-        return super.onTouchEvent(event)
-    }
 
 
-    //TO DO :change for OnBackPressedCallback
-    override fun onBackPressed() {
-
-        if (viewModel.showPreferences.value) {
-            viewModel.showPreferences(false)
-        } else {
-            val session = viewModel.getActiveSession()
-            if ((session.navigationDelegate as MyNavigationDelegate).canGoBack) {
-                session.goBack()
-            } else {
-                super.onBackPressed()
-            }
-        }
-    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.setSessionsManagerObserver(this)
+
+//        MobileAds.initialize(this) {}
+
+        viewModel.getActiveSession()
 
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -79,17 +58,16 @@ class MainActivity :
                     color = MaterialTheme.colorScheme.background
                 ) {
 
-                    MainComposable()
+                    RootComposable()
                 }
             }
         }
     }
 
-
-    override fun update(action: SessionObserver.Action, data: Bundle) {
+    override fun update(action: SessionObserver.Action, bundle: Bundle) {
         when (action) {
             SessionObserver.Action.SELECT -> {
-                val text = data.getString(SessionObserver.TEXT)
+                val text = bundle.getString(SessionObserver.TEXT)
                 val intent = Intent()
                 intent.action = Intent.ACTION_TRANSLATE
 
@@ -98,7 +76,7 @@ class MainActivity :
                         intent.putExtra(Intent.EXTRA_PROCESS_TEXT, it)
                         //          if (intent.resolveActivity(getPackageManager()) != null) {
                         viewModel.setSourceText(it)
-                        viewModel.setSelectionCenterCoords(data.getSizeF(SessionObserver.COORDS))
+                        viewModel.setSelectionCenterCoords(bundle.getSizeF(SessionObserver.COORDS))
                         startActivity(intent)
                         //          }
                     }
@@ -106,15 +84,14 @@ class MainActivity :
             }
 
             SessionObserver.Action.NAVIGATE -> {
-                Log.d(TAG, "address set to " + data)
-
-                (data.getString(SessionObserver.TEXT))?.let {
-                    viewModel.setAddress(TextFieldValue(it))
-//                    viewModel.setUrl()
+                (bundle.getString(SessionObserver.TEXT))?.let {
+                    Log.d(TAG, "address set to " + it)
+                    viewModel.setSearchText(TextFieldValue(it))
                 }
             }
         }
     }
+
 
     @Preview
     @Composable

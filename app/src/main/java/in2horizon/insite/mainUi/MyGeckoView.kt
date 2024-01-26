@@ -5,7 +5,6 @@ import android.content.Context
 import android.os.SystemClock
 import android.util.Log
 import android.view.MotionEvent
-import in2horizon.insite.TransViewModel
 import org.mozilla.geckoview.GeckoView
 
 
@@ -14,17 +13,6 @@ class MyGeckoView(context: Context, private val viewModel: TransViewModel) : Gec
     val TAG = javaClass.name
     val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as
             ClipboardManager
-
-        /* init {
-             viewTreeObserver.addOnGlobalLayoutListener {
-                 Log.d(TAG,"onGLobalLayout")
-                 if (shouldClick) {
-                     shouldClick = false
-                     callMyOnClick()
-                 }
-             }
-         }*/
-
 
         override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
             super.onWindowFocusChanged(hasWindowFocus)
@@ -39,8 +27,6 @@ class MyGeckoView(context: Context, private val viewModel: TransViewModel) : Gec
             } else {
                 clipboardManager?.clearPrimaryClip()
             }
-            //    super.onWindowFocusChanged(hasWindowFocus)
-
         }
 
         private fun saveTranslation() {
