@@ -88,17 +88,13 @@ fun MyBottomBar() {
                     }
                     //                   ad.value = true
                     //         show.value = true
-                    /*
-                        val intent = Intent(Intent.ACTION_TRANSLATE)
-                        intent.putExtra(Intent.EXTRA_PROCESS_TEXT, "")
-                        ctx.startActivity(intent)
-    */
+
                 }
             )
             when {
                 ad.value -> {
-                    showIntertitial(ctx, show)
-                    ad.value = false
+            //        showIntertitial(ctx, show)
+            //        ad.value = false
                 }
 
                 show.value -> {
@@ -125,11 +121,7 @@ fun MyBottomBar() {
         }
     }
 
-
 }
 
-fun showIntertitial(ctx: Context, show: MutableState<Boolean>) {
 
 
-
-}

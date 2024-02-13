@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
+import com.google.android.gms.ads.MobileAds
 import dagger.hilt.android.AndroidEntryPoint
 import in2horizon.insite.gecko.SessionObserver
 import in2horizon.insite.mainUi.RootComposable
@@ -39,7 +40,7 @@ class MainActivity :
         super.onCreate(savedInstanceState)
         viewModel.setSessionsManagerObserver(this)
 
-//        MobileAds.initialize(this) {}
+    //    MobileAds.initialize(this) {}
 
         viewModel.getActiveSession()
 

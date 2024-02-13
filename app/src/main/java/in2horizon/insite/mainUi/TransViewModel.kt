@@ -16,6 +16,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.gmail.in2horizon.insite.db.Translation
 import com.gmail.in2horizon.insite.db.TranslationRepository
+import com.google.android.gms.ads.interstitial.InterstitialAd
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import in2horizon.insite.R
@@ -73,9 +74,6 @@ class TransViewModel @Inject constructor(
     private val _searchText = MutableStateFlow(TextFieldValue(""/*"https://www.tagesschau.de/"*/))
     val searchText = _searchText.asStateFlow()
 
-//    private val _url = MutableStateFlow("")
-    //   var url = _url.asStateFlow()
-
     private val _mUrl = MutableStateFlow(MyUrl())
     var mUrl = _mUrl.asStateFlow()
 
@@ -107,17 +105,18 @@ class TransViewModel @Inject constructor(
     val allTranslationsPagedFlow: Flow<PagingData<Translation>> = translationRepository
         .getAllTranslationsPaged().cachedIn(viewModelScope)
 
-
     init {
         Log.d(TAG, "ViewModel initalization")
 
         prefs.getString(CURRENT_ENGINE, appContext.getString(R.string.DuckDuckGo))
             ?.let { _engineUrl.value = it }
 
-        getStartPage().let { setSearchText(TextFieldValue(it))/*_searchText.value = TextFieldValue
+        getStartPage().let {
+            setSearchText(TextFieldValue(it))/*_searchText.value = TextFieldValue
         (it, TextRange(0,it
         .length))
-        */ }
+        */
+        }
         /*  if(useStartPage){
               setAddress(TextFieldValue(getStartPage()))
           }*/
@@ -151,8 +150,8 @@ class TransViewModel @Inject constructor(
     fun setUrl() {
 
         val isValid = Patterns.WEB_URL.matcher(
-                searchText.value.text
-            ).matches()
+            searchText.value.text
+        ).matches()
 
         if (isValid) {
             rawSearchText = ""

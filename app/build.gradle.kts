@@ -1,3 +1,8 @@
+import org.jetbrains.kotlin.gradle.plugin.extraProperties
+import java.io.File
+import java.io.FileInputStream
+import java.util.*
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -10,9 +15,28 @@ android {
     namespace = "in2horizon.insite"
     compileSdk = 34
 
+    buildFeatures {
+        buildConfig = true
+    }
 
 
     defaultConfig {
+//        loading private keys from secret.properties
+        val secretProperties = Properties().apply {
+            load(FileInputStream(File(rootProject.rootDir, "secret.properties")))
+        }
+//        val appAdId:String= project.property("APP_AD_ID") as String
+        val appAdId: String = secretProperties.getProperty("APP_AD_ID")
+        val adUnitId:String = secretProperties.getProperty("AD_UNIT_ID")
+
+
+        buildConfigField(
+            "String",
+            "AD_UNIT_ID",
+            adUnitId
+        )
+        manifestPlaceholders["APP_AD_ID"] = appAdId
+
         applicationId = "in2horizon.insite"
         minSdk = 28
         targetSdk = 33
@@ -34,7 +58,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+    isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -42,15 +66,16 @@ android {
             )
             signingConfig = signingConfigs.getByName("debug")
         }
-        /*debug{
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+        debug{
 
-        }*/
+            /*      isMinifyEnabled = true
+                isShrinkResources = true
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+                )*/
+
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

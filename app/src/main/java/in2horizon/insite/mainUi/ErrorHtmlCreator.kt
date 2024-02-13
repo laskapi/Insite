@@ -32,7 +32,7 @@ class ErrorHtmlCreator {
             try {
                 val file = File.createTempFile("errorMessage", null)
 
-                file.appendText(
+               file.appendText(
                     "<!DOCTYPE html>\n" +
                             "<html lang=\"en\">\n" +
                             "<head>\n" +
