@@ -2,6 +2,7 @@ package in2horizon.insite.translationsUi
 
 import android.app.Activity
 import android.content.Context
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
@@ -14,14 +15,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
@@ -32,7 +32,6 @@ import in2horizon.insite.R
 import in2horizon.insite.mainUi.Screen
 import in2horizon.insite.mainUi.TransViewModel
 import in2horizon.insite.settings.SettingsButton
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
@@ -47,21 +46,24 @@ fun TranslationsView() {
     val ctx = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val bottomBarHeight = viewModel.bottomBarHeight.collectAsState()
-    var adShown = remember { mutableStateOf(false) }
     var ad: InterstitialAd? = null
 
+    val backToMain = {
+        coroutineScope.launch {
+            Log.d("adShown", "")
+            viewModel.pager.animateScrollToPage(Screen.MAIN.ordinal)
+        }
+    }
+
+
     BackHandler(enabled = (viewModel.pager.currentPage == Screen.TRANSLATIONS.ordinal)) {
-        back2main(coroutineScope, viewModel)
+        ad?.show(ctx as Activity)?:backToMain()
     }
 
-    loadInterstitial(ctx, setAd = { ad = it }, { adShown.value = true })
-
-    if (adShown.value) {
-        back2main(coroutineScope, viewModel)
-    }
+    loadInterstitial(ctx, setAd = { ad = it }
+    ) { backToMain() }
 
     Scaffold(topBar = {
-
     },
         content =
         {
@@ -83,13 +85,7 @@ fun TranslationsView() {
                     modifier = Modifier
                         .align(Alignment.Center),
                     onClick = {
-
-                        if (ad != null) {
-                            ad?.show(ctx as Activity)
-
-                        } else {
-                            back2main(coroutineScope, viewModel)
-                        }
+                        ad?.show(ctx as Activity)?:backToMain()
                     },
                 ) {
                     Text(text = ctx.getString(R.string.close))
@@ -102,19 +98,7 @@ fun TranslationsView() {
 }
 
 
-@OptIn(ExperimentalFoundationApi::class)
-fun back2main(scope: CoroutineScope, viewModel: TransViewModel) {
-
-    scope.launch {
-        viewModel.pager.animateScrollToPage(
-            Screen.MAIN
-                .ordinal
-        )
-    }
-}
-
-
-fun loadInterstitial(ctx: Context, setAd: (InterstitialAd) -> Unit, onAdVisible: () -> Unit) {
+fun loadInterstitial(ctx: Context, setAd: (InterstitialAd) -> Unit, onAdShown: () -> Unit) {
 
     InterstitialAd.load(
         ctx,
@@ -129,7 +113,11 @@ fun loadInterstitial(ctx: Context, setAd: (InterstitialAd) -> Unit, onAdVisible:
                 interstitialAd
                     .fullScreenContentCallback = object : FullScreenContentCallback() {
                     override fun onAdShowedFullScreenContent() {
-                        onAdVisible()
+                        onAdShown()
+                    }
+
+                    override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+                        onAdShown()
                     }
 
 

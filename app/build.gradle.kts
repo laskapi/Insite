@@ -22,10 +22,13 @@ android {
 
     defaultConfig {
 //        loading private keys from secret.properties
+
         val secretProperties = Properties().apply {
             load(FileInputStream(File(rootProject.rootDir, "secret.properties")))
         }
+
 //        val appAdId:String= project.property("APP_AD_ID") as String
+
         val appAdId: String = secretProperties.getProperty("APP_AD_ID")
         val adUnitId:String = secretProperties.getProperty("AD_UNIT_ID")
 

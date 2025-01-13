@@ -32,7 +32,6 @@
             android:value="${APP_AD_ID}" />
 
 
-
     </application>
 
 </manifest>
